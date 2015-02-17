@@ -16,6 +16,7 @@
 		<_item value="pc">pc</_item>
 	</param>
 	<param name="thickness" type="float" min="1.0" max="100.0" _gui-text="Material thickness">1.2</param>
+	<param name="tool_diameter" type="float" min="0.0" _gui-text="Tool diameter (mind the units!)">0.3</param>
 	<param name="tolerance" type="float" min="-10000.0" max="10000.0" _gui-text="Tolerance">0.05</param>
 	<param name="height" type="float" min="0.0" max="10000.0" _gui-text="Height">100</param>
 	<param name="width" type="float" min="0.0" max="10000.0" _gui-text="Width">100</param>

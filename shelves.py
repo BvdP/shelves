@@ -145,6 +145,10 @@ class Shelves(inkex.Effect):
           type = 'string', dest = 'unit', default = 'cm',
           help = 'Unit, should be one of ')
 
+        self.OptionParser.add_option('--tool_diameter', action = 'store',
+          type = 'float', dest = 'tool_diameter', default = '0.3',
+          help = 'Tool diameter')
+
         self.OptionParser.add_option('--tolerance', action = 'store',
           type = 'float', dest = 'tolerance', default = '0.05',
           help = '')
@@ -222,6 +226,7 @@ class Shelves(inkex.Effect):
         groove_depth = self.unittouu(str(self.options.groove_depth) + unit)
         tab_size = self.unittouu(str(self.options.tab_size) + unit)
         tolerance = self.unittouu(str(self.options.tolerance) + unit)
+        tool_diameter = self.unittouu(str(self.options.tool_diameter) + unit)
 
         svg = self.document.getroot()
         docWidth = self.unittouu(svg.get('width'))
