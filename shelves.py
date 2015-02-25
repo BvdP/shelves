@@ -1,145 +1,20 @@
 #!/usr/bin/env python
 
-import inkex
-import simplestyle
+#import Inkscape_helper.inkscape_helper as helper
+from Inkscape_helper.inkscape_helper import *
 
-from math import *
-from collections import namedtuple
+#import simplestyle
+
 
 #Note: keep in mind that SVG coordinates start in the top-left corner i.e. with an inverted y-axis
 
 
-default_style = simplestyle.formatStyle(
-    {'stroke': '#000000',
-    'stroke-width': '1',
-    'fill': 'none'
-    })
-
-groove_style = simplestyle.formatStyle(
-    {'stroke': '#0000FF',
-    'stroke-width': '1',
-    'fill': 'none'
-    })
-
-def draw_SVG_square(parent, w, h, x, y, style=default_style):
-    attribs = {
-        'style': style,
-        'height': str(h),
-        'width': str(w),
-        'x': str(x),
-        'y': str(y)
-    }
-    inkex.etree.SubElement(parent, inkex.addNS('rect', 'svg'), attribs)
-
-def draw_SVG_ellipse(parent, rx, ry, center, start_end=(0, 2*pi), style=default_style, transform=''):
-    ell_attribs = {'style': style,
-        inkex.addNS('cx', 'sodipodi'): str(center.x),
-        inkex.addNS('cy', 'sodipodi'): str(center.y),
-        inkex.addNS('rx', 'sodipodi'): str(rx),
-        inkex.addNS('ry', 'sodipodi'): str(ry),
-        inkex.addNS('start', 'sodipodi'): str(start_end[0]),
-        inkex.addNS('end', 'sodipodi'): str(start_end[1]),
-        inkex.addNS('open', 'sodipodi'): 'true',  #all ellipse sectors we will draw are open
-        inkex.addNS('type', 'sodipodi'): 'arc',
-        'transform': transform
-    }
-    inkex.etree.SubElement(parent, inkex.addNS('path', 'svg'), ell_attribs)
-
-
-def draw_SVG_arc(parent, rx, ry, x_axis_rot, style=default_style):
-    arc_attribs = {'style': style,
-        'rx': str(rx),
-        'ry': str(ry),
-        'x-axis-rotation': str(x_axis_rot),
-        'large-arc': '',
-        'sweep': '',
-        'x': '',
-        'y': ''
-        }
-        #name='part'
-    style = {'stroke': '#000000', 'fill': 'none'}
-    drw = {'style':simplestyle.formatStyle(style),inkex.addNS('label','inkscape'):name,'d':XYstring}
-    inkex.etree.SubElement(parent, inkex.addNS('path', 'svg'), drw)
-    inkex.addNS('', 'svg')
-
-def draw_SVG_text(parent, coordinate, txt, style=default_style):
-    text = inkex.etree.Element(inkex.addNS('text', 'svg'))
-    text.text = txt
-    text.set('x', str(coordinate.x))
-    text.set('y', str(coordinate.y))
-    style = {'text-align': 'center', 'text-anchor': 'middle'}
-    text.set('style', simplestyle.formatStyle(style))
-    parent.append(text)
-
-#draw an SVG line segment between the given (raw) points
-def draw_SVG_line(parent, start, end, style = default_style):
-    line_attribs = {'style': style,
-                    'd': 'M '+str(start.x)+','+str(start.y)+' L '+str(end.x)+','+str(end.y)}
-
-    inkex.etree.SubElement(parent, inkex.addNS('path', 'svg'), line_attribs)
-
-
-def SVG_move_to(x, y):
-    return "M %d %d" % (x, y)
-
-def SVG_line_to(x, y):
-    return "L %d %d" % (x, y)
-
-def SVG_arc_to(rx, ry, x, y):
-    la = sw = 0
-    return "A %d %d 0 %d %d" % (rx, ry, la, sw, x, y)
-
-def SVG_path(components):
-    return '<path d="' + ' '.join(components) + '">'
-
-def SVG_curve(parent, segments, style, closed=True):
-    #pathStr = 'M '+ segments[0]
-    pathStr = ' '.join(segments)
-    if closed:
-        pathStr += ' z'
-    attributes = {
-      'style': style,
-      'd': pathStr}
-    inkex.etree.SubElement(parent, inkex.addNS('path', 'svg'), attributes)
-
-
-class Coordinate:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __repr__(self):
-        return self.__str__()
-
-    def __str__(self):
-        return "(%f, %f)" % (self.x, self.y)
-
-    def __add__(self, other):
-        return Coordinate(self.x + other.x, self.y + other.y)
-
-    # def __radd__(self, other):
-    #    return self + other
-
-    def __sub__(self, other):
-        return Coordinate(self.x - other.x, self.y - other.y)
-
-    def __mul__(self, factor):
-        return Coordinate(self.x * factor, self.y * factor)
-
-    # def __rmul__(self, other):
-    #     return self * other
-
-    def __div__(self, quotient):
-        return Coordinate(self.x / quotient, self.y / quotient)
-
-
-class Shelves(inkex.Effect):
+class Shelves(Effect):
     """
     Creates a new layer with the drawings for a parametrically generaded box.
     """
     def __init__(self):
-        inkex.Effect.__init__(self)
-        self.knownUnits = ['in', 'pt', 'px', 'mm', 'cm', 'm', 'km', 'pc', 'yd', 'ft']
+        Effect.__init__(self)
 
         self.OptionParser.add_option('--unit', action = 'store',
           type = 'string', dest = 'unit', default = 'cm',
@@ -180,15 +55,6 @@ class Shelves(inkex.Effect):
         self.OptionParser.add_option('--tab_size', action = 'store',
           type = 'float', dest = 'tab_size', default = '10',
           help = 'Approximate tab width (tabs will be evenly spaced along the length of the edge)')
-
-    try:
-        inkex.Effect.unittouu   # unitouu has moved since Inkscape 0.91
-    except AttributeError:
-        try:
-            def unittouu(self, unit):
-                return inkex.unittouu(unit)
-        except AttributeError:
-            pass
 
     def effect(self):
         """
