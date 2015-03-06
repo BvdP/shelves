@@ -205,15 +205,20 @@ class Shelves(doc.Effect):
 
         #shelves
         prev_top = 0
+        gr_short = thickness - groove_depth + tool_diameter / 2     # avoid that the grooves are visible from the outside
         for s in shelves:
             s_top = prev_top + thickness + s - tolerance
             s_bottom = s_top + thickness + tolerance * 2
-            doc.draw_line(g_l_side, left_side_origin + V(s_top), left_side_origin + V(s_top) + H(depth), groove_style)
-            doc.draw_line(g_l_side, left_side_origin + V(s_bottom), left_side_origin + V(s_bottom) + H(depth), groove_style)
-            doc.draw_line(g_r_side, right_side_origin + V(s_top), right_side_origin + V(s_top) + H(depth), groove_style)
-            doc.draw_line(g_r_side, right_side_origin + V(s_bottom), right_side_origin + V(s_bottom) + H(depth), groove_style)
-            doc.draw_line(g_back, back_origin + V(s_top), back_origin + V(s_top) + H(width), groove_style)
-            doc.draw_line(g_back, back_origin + V(s_bottom), back_origin + V(s_bottom) + H(width), groove_style)
+
+            doc.draw_line(g_l_side, left_side_origin + V(s_top), left_side_origin + V(s_top) + H(depth - gr_short), groove_style)
+            doc.draw_line(g_l_side, left_side_origin + V(s_bottom), left_side_origin + V(s_bottom) + H(depth - gr_short), groove_style)
+
+            doc.draw_line(g_r_side, right_side_origin + V(s_top) + H(gr_short), right_side_origin + V(s_top) + H(depth), groove_style)
+            doc.draw_line(g_r_side, right_side_origin + V(s_bottom) + H(gr_short), right_side_origin + V(s_bottom) + H(depth), groove_style)
+
+            doc.draw_line(g_back, back_origin + V(s_top) + H(gr_short), back_origin + V(s_top) + H(width - gr_short), groove_style)
+            doc.draw_line(g_back, back_origin + V(s_bottom)  + H(gr_short), back_origin + V(s_bottom) + H(width - gr_short), groove_style)
+
             prev_top = s_top
 
 # Create effect instance and apply it.
